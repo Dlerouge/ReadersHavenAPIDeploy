@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reader’s Haven POC — Book Search</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="container">
+    <h1>Reader’s Haven — POC</h1>
+    <p>Proof of concept: fetch and display books using the Google Books API.</p>
+  </header>
+
+  <main class="container">
+    <form id="searchForm" class="search">
+      <label class="sr-only" for="query">Search books</label>
+      <input id="query" name="query" type="text" placeholder="Try: cozy mystery, vampire romance, short fantasy…" required />
+      <button type="submit">Search</button>
+    </form>
+
+    <section id="status" class="status" aria-live="polite"></section>
+    <section id="results" class="grid" aria-label="Book results"></section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
