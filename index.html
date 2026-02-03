@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src 'self' https://www.googleapis.com; img-src 'self' https://*.googleusercontent.com https://books.google.com data:;">
   <title>Reader’s Haven POC — Book Search</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -15,7 +16,7 @@
   <main class="container">
     <form id="searchForm" class="search">
       <label class="sr-only" for="query">Search books</label>
-      <input id="query" name="query" type="text" placeholder="Try: cozy mystery, vampire romance, short fantasy…" required />
+      <input type="text" id="query" placeholder="Try: cozy mystery, vampire romance, short fantasy…" required />
       <button type="submit">Search</button>
     </form>
 
@@ -25,7 +26,7 @@
     <section id="results" class="grid" aria-label="Book results"></section>
   </main>
 
-  <script src="app_v2.js"></script>
+  <script src="script.js"></script>
   
 
 </body>

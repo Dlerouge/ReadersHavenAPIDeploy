@@ -3,21 +3,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const queryInput = document.getElementById("query");
   const resultsEl = document.getElementById("results");
   const statusEl = document.getElementById("status");
-  const testBtn = document.getElementById("testApi"); // optional
+  const testBtn = document.getElementById("testApi");
 
-  // Hard fail with a helpful message if required elements are missing
   if (!form || !queryInput || !resultsEl || !statusEl) {
-    console.error("Missing required HTML elements. Need: searchForm, query, results, status");
+    console.error("Missing required HTML elements.");
     return;
   }
 
-  function setStatus(msg) {
-    statusEl.textContent = msg;
-  }
+  const setStatus = (msg) => { statusEl.textContent = msg; };
 
   function truncate(text, max = 180) {
     if (!text) return "";
-    return text.length > max ? text.slice(0, max).trim() + "…" : text;
+    return text.length > max ? text.slice(0, max).trim() + "..." : text;
   }
 
   function bookCard(item) {
@@ -25,19 +22,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const title = info.title || "Untitled";
     const authors = (info.authors || []).join(", ") || "Unknown author";
     const desc = truncate(info.description, 200) || "No description available.";
-    const thumb =
-      info.imageLinks?.thumbnail ||
-      info.imageLinks?.smallThumbnail ||
-      "";
+    const thumb = info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || "";
 
     const article = document.createElement("article");
     article.className = "card";
 
     const img = document.createElement("img");
     img.alt = `Cover of ${title}`;
-    img.src =
-      thumb ||
-      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='600'%3E%3Crect width='100%25' height='100%25' fill='%23eee'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-size='20'%3ENo Cover%3C/text%3E%3C/svg%3E";
+    img.src = thumb || "https://via.placeholder.com/128x192?text=No+Cover";
 
     const h3 = document.createElement("h3");
     h3.textContent = title;
@@ -54,54 +46,36 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function searchBooks(q) {
-    // NO API KEY (avoids quota/restriction issues on GitHub Pages)
     const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=12`;
-
     const res = await fetch(url);
-    const data = await res.json();
-
-    console.log("Google Books response:", { status: res.status, url, data });
-
-    if (!res.ok) {
-      throw new Error(data?.error?.message || `HTTP ${res.status}`);
-    }
-
-    return data;
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    return await res.json();
   }
 
   async function runSearch(q) {
     resultsEl.innerHTML = "";
-    setStatus("Searching…");
-
+    setStatus("Searching...");
     try {
       const data = await searchBooks(q);
       const items = data.items || [];
-
       if (items.length === 0) {
-        setStatus("No results found. Try a different search.");
+        setStatus("No results found.");
         return;
       }
-
-      items.forEach((item) => resultsEl.appendChild(bookCard(item)));
-      setStatus(`Showing ${items.length} results for “${q}”.`);
+      items.forEach(item => resultsEl.appendChild(bookCard(item)));
+      setStatus(`Showing results for "${q}"`);
     } catch (err) {
       console.error(err);
-      setStatus(`Error: ${err.message}`);
+      setStatus("Error fetching books.");
     }
   }
 
-  // Form submit search
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const q = queryInput.value.trim();
-    if (!q) {
-      setStatus("Type a search term first.");
-      return;
-    }
-    runSearch(q);
+    if (q) runSearch(q);
   });
 
-  // Optional Test button search
   if (testBtn) {
     testBtn.addEventListener("click", () => runSearch("cozy"));
   }
