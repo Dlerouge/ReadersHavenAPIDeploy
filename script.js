@@ -60,48 +60,56 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function searchBooks(query) {
-    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=12`;
+  const base = `https://www.googleapis.com/books/v1/volumes`;
+  const params = new URLSearchParams({
+    q: query,                 // keep it simple
+    maxResults: "12",
+    printType: "books",
+    orderBy: "relevance",
+    projection: "lite",
+    langRestrict: "en"
+  });
 
-    setStatus("Fetching…");
-    console.log("Request URL:", url);
+  const url = `${base}?${params.toString()}`;
+  const res = await fetch(url, { cache: "no-store" });
+  const data = await res.json();
 
-    const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error(data?.error?.message || `HTTP ${res.status}`);
+  return data;
+}
 
-    console.log("HTTP status:", res.status);
-
-    const data = await res.json();
-    console.log("Payload:", data);
-
-    if (!res.ok) {
-      throw new Error(data?.error?.message || `HTTP ${res.status}`);
-    }
-
-    return data;
-  }
 
   async function runSearch(query) {
-    resultsEl.innerHTML = "";
-    setStatus("Searching…");
+  resultsEl.innerHTML = "";
+  setStatus("Searching…");
 
-    try {
-      const data = await searchBooks(query);
-      const items = data.items || [];
+  try {
+    const data = await searchBooks(query);
+    let items = data.items || [];
 
-      if (items.length === 0) {
-        setStatus(`No results found for "${query}".`);
-        // Show something inside results to prove the section is working
-        resultsEl.textContent = "No books returned from API.";
-        return;
-      }
-
-      items.forEach((item) => resultsEl.appendChild(bookCard(item)));
-      setStatus(`Showing ${items.length} results for "${query}".`);
-    } catch (err) {
-      console.error("Search error:", err);
-      setStatus(`Error: ${err.message}`);
-      resultsEl.textContent = `Error details: ${err.message}`;
+    // Fallback: broaden the query if Google returns 0 items
+    if (items.length === 0) {
+      // Try a broader keyword-style query
+      const fallbackQuery = query.split(" ").join("+"); // "vampire romance" -> "vampire+romance"
+      const fallbackData = await searchBooks(fallbackQuery);
+      items = fallbackData.items || [];
     }
+
+    if (items.length === 0) {
+      setStatus(`No results found for "${query}". Try a simpler search like "vampire" or "paranormal romance".`);
+      resultsEl.textContent = "No books returned from the API.";
+      return;
+    }
+
+    items.forEach((item) => resultsEl.appendChild(bookCard(item)));
+    setStatus(`Showing ${items.length} results for "${query}".`);
+  } catch (err) {
+    console.error("Search error:", err);
+    setStatus(`Error: ${err.message}`);
+    resultsEl.textContent = `Error details: ${err.message}`;
   }
+}
+
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
