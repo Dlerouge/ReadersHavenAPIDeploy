@@ -44,12 +44,26 @@ function bookCard(item) {
 }
 
 async function searchBooks(q) {
-  // Basic Google Books API usage
-  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=12`;
+  const API_KEY = "AIzaSyDG-9s1_rAX-3sf6EJt0Y_AKFgvvnJuPME";
+  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=12&key=${API_KEY}`;
+
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
+  const data = await res.json().catch(() => ({}));
+
+  // If Google returns an error payload, show it
+  if (!res.ok) {
+    const msg = data?.error?.message || `API error: ${res.status}`;
+    throw new Error(msg);
+  }
+
+  // Extra safety: some errors return 200 but still contain an "error" object
+  if (data?.error) {
+    throw new Error(data.error.message || "API returned an error.");
+  }
+
+  return data;
 }
+
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
