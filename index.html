@@ -3,31 +3,28 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src 'self' https://www.googleapis.com; img-src 'self' https://*.googleusercontent.com https://books.google.com data:;">
   <title>Reader’s Haven POC — Book Search</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="container">
     <h1>Reader’s Haven — POC</h1>
-    <p>Proof of concept: fetch and display books using the Google Books API.</p>
+    <p>Proof of concept: fetch and display books using the Open Library API.</p>
   </header>
 
   <main class="container">
     <form id="searchForm" class="search">
       <label class="sr-only" for="query">Search books</label>
-      <input type="text" id="query" placeholder="Try: cozy mystery, vampire romance, short fantasy…" required />
+      <input id="query" name="query" type="text" placeholder="Try: cozy mystery, vampire romance, short fantasy…" required />
       <button type="submit">Search</button>
     </form>
 
-     <button id="testApi" type="button">Test API</button>
+    <button id="testApi" type="button">Test API</button>
 
     <section id="status" class="status" aria-live="polite"></section>
     <section id="results" class="grid" aria-label="Book results"></section>
   </main>
 
   <script src="script.js"></script>
-  
-
 </body>
 </html>

@@ -1,14 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Required elements
+  console.log("✅ script.js loaded (Open Library version)");
+
   const form = document.getElementById("searchForm");
   const queryInput = document.getElementById("query");
   const resultsEl = document.getElementById("results");
   const statusEl = document.getElementById("status");
+  const testBtn = document.getElementById("testApi"); // optional
 
-  // Optional element
-  const testBtn = document.getElementById("testApi");
-
-  // Safety check: if any required element is missing, stop and tell you why
   if (!form || !queryInput || !resultsEl || !statusEl) {
     console.error("Missing required HTML elements. Need: searchForm, query, results, status");
     return;
@@ -23,15 +21,14 @@ document.addEventListener("DOMContentLoaded", () => {
     return text.length > max ? text.slice(0, max).trim() + "…" : text;
   }
 
-  function getCoverUrl(coverId) {
-    return coverId ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg` : "";
-  }
-
   function bookCard(doc) {
     const title = doc.title || "Untitled";
     const authors = (doc.author_name || []).join(", ") || "Unknown author";
-    const year = doc.first_publish_year ? `• ${doc.first_publish_year}` : "";
-    const coverUrl = getCoverUrl(doc.cover_i);
+    const coverId = doc.cover_i;
+
+    const coverUrl = coverId
+      ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`
+      : "";
 
     const article = document.createElement("article");
     article.className = "card";
@@ -47,17 +44,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const meta = document.createElement("div");
     meta.className = "meta";
-    meta.textContent = `By: ${authors} ${year}`.trim();
+    meta.textContent = `By: ${authors}`;
 
-    // Optional: short snippet if available
+    // Optional description/snippet if available
     const snippet =
-      (Array.isArray(doc.first_sentence) ? doc.first_sentence.join(" ") : doc.first_sentence) ||
-      "";
+      (Array.isArray(doc.first_sentence) ? doc.first_sentence.join(" ") : doc.first_sentence) || "";
 
     const p = document.createElement("p");
     p.textContent = snippet ? truncate(snippet, 200) : "";
 
-    // Only append paragraph if there is content
     article.append(img, h3, meta);
     if (p.textContent) article.appendChild(p);
 
@@ -66,14 +61,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function searchBooks(query) {
     const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=12`;
-
-    const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
-    }
-
-    const data = await res.json();
-    return data;
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
   }
 
   async function runSearch(query) {
@@ -84,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await searchBooks(query);
       const docs = data.docs || [];
 
-      console.log("Open Library results:", docs);
+      console.log("Docs received:", docs);
 
       if (docs.length === 0) {
         setStatus(`No results found for “${query}”. Try a different search.`);
@@ -99,7 +89,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Form submit
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const q = queryInput.value.trim();
@@ -112,7 +101,6 @@ document.addEventListener("DOMContentLoaded", () => {
     runSearch(q);
   });
 
-  // Optional test button
   if (testBtn) {
     testBtn.addEventListener("click", () => runSearch("cozy"));
   }
